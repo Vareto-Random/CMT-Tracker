@@ -2,10 +2,7 @@
 *.jpg
 *.jpeg
 *.mp4
-
-# PyCharm
-VaretoCMT/.idea/
-
+videoOUT/
 
 ## C++
 # Compiled Object files

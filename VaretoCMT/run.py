@@ -13,6 +13,9 @@ import util
 
 CMT = CMT.CMT()
 
+OUTPUT_FILE = "out_boxes.txt"
+open(OUTPUT_FILE, 'w').close()
+
 parser = argparse.ArgumentParser(description='Track an object.')
 
 parser.add_argument('inputpath', nargs='?', help='The input path.')
@@ -181,10 +184,14 @@ else:
             cv2.line(im_draw, CMT.br, CMT.bl, (255, 0, 0), 4)
             cv2.line(im_draw, CMT.bl, CMT.tl, (255, 0, 0), 4)
 
-        util.draw_keypoints(CMT.tracked_keypoints, im_draw, (255, 255, 255))
+        util.draw_keypoints(CMT.tracked_keypoints, im_draw, (255, 255, 255))  # white
         # this is from simplescale
         util.draw_keypoints(CMT.votes[:, :2], im_draw)  # blue
         util.draw_keypoints(CMT.outliers[:, :2], im_draw, (0, 0, 255))
+
+        with open(OUTPUT_FILE, "a") as myfile:
+            myfile.write(str(frame) + ":" + str(CMT.tl) + " " + str(CMT.br) + "\n")
+        print str(frame) + ": tl" + str(CMT.tl) + " br" + str(CMT.br)
 
         if args.output is not None:
             # Original image
@@ -232,10 +239,10 @@ else:
         # Advance frame number
         frame += 1
 
-        print '{5:04d}: center: {0:.2f},{1:.2f} scale: {2:.2f}, active: {3:03d}, {4:04.0f}ms'.format(CMT.center[0],
-                                                                                                     CMT.center[1],
-                                                                                                     CMT.scale_estimate,
-                                                                                                     CMT.active_keypoints.shape[
-                                                                                                         0],
-                                                                                                     1000 * (toc - tic),
-                                                                                                     frame)
+        # print '{5:04d}: center: {0:.2f},{1:.2f} scale: {2:.2f}, active: {3:03d}, {4:04.0f}ms'.format(CMT.center[0],
+        #                                                                                              CMT.center[1],
+        #                                                                                              CMT.scale_estimate,
+        #                                                                                              CMT.active_keypoints.shape[
+        #                                                                                                  0],
+        #                                                                                              1000 * (toc - tic),
+        #                                                                                              frame)
