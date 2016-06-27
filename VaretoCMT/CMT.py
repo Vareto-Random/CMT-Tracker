@@ -25,8 +25,12 @@ class CMT(object):
     def initialise(self, im_gray0, tl, br):
 
         # Initialise detector, descriptor, matcher
-        self.detector = cv2.FeatureDetector_create(self.DETECTOR)
-        self.descriptor = cv2.DescriptorExtractor_create(self.DESCRIPTOR)
+        if cv2.__version__ == '3.0.0':
+            self.detector = cv2.BRISK_create()
+            self.descriptor = cv2.BRISK_create()
+        else:
+            self.detector = cv2.FeatureDetector_create(self.DETECTOR)
+            self.descriptor = cv2.DescriptorExtractor_create(self.DESCRIPTOR)
         self.matcher = cv2.DescriptorMatcher_create(self.MATCHER)
 
         # Get initial keypoints in whole image
