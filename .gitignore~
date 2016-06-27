@@ -3,6 +3,9 @@
 *.jpeg
 *.mp4
 
+# PyCharm
+VaretoCMT/.idea/
+
 
 ## C++
 # Compiled Object files
