@@ -386,3 +386,5 @@ class CMT(object):
             self.br = br
 
             self.bb = np.array([min_x, min_y, max_x - min_x, max_y - min_y])
+
+        return self

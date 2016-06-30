@@ -1,6 +1,7 @@
 import argparse
 import cv2
-from numpy import empty, nan
+from multiprocessing import Pool
+#from numpy import empty, nan
 import os
 import sys
 import time
@@ -109,6 +110,7 @@ CMT2.initialise(im_gray0, tl2, br2)
 
 frame = 1
 while True:
+    pool = Pool(processes=4)
     print frame
 
     # Read image
@@ -119,21 +121,23 @@ while True:
     im_draw = np.copy(im)
 
     tic = time.time()
+    print pool.apply_async(CMT1.process_frame, im_gray)
+    #print pool.apply_async(CMT2.process_frame, im_gray)
     #CMT1.process_frame(im_gray)
-    CMT2.process_frame(im_gray)
+    #CMT2.process_frame(im_gray)
     toc = time.time()
 
     # Display results
-    # if CMT1.has_result:
-    #     cv2.line(im_draw, CMT1.tl, CMT1.tr, (255, 0, 0), 4)
-    #     cv2.line(im_draw, CMT1.tr, CMT1.br, (255, 0, 0), 4)
-    #     cv2.line(im_draw, CMT1.br, CMT1.bl, (255, 0, 0), 4)
-    #     cv2.line(im_draw, CMT1.bl, CMT1.tl, (255, 0, 0), 4)
-    if CMT2.has_result:
-        cv2.line(im_draw, CMT2.tl, CMT2.tr, (255, 0, 0), 4)
-        cv2.line(im_draw, CMT2.tr, CMT2.br, (255, 0, 0), 4)
-        cv2.line(im_draw, CMT2.br, CMT2.bl, (255, 0, 0), 4)
-        cv2.line(im_draw, CMT2.bl, CMT2.tl, (255, 0, 0), 4)
+    # if res1.has_result:
+    #     cv2.line(im_draw, res1.tl, res1.tr, (255, 0, 0), 4)
+    #     cv2.line(im_draw, res1.tr, res1.br, (255, 0, 0), 4)
+    #     cv2.line(im_draw, res1.br, res1.bl, (255, 0, 0), 4)
+    #     cv2.line(im_draw, res1.bl, res1.tl, (255, 0, 0), 4)
+    # if res2.has_result:
+    #     cv2.line(im_draw, CMT2.tl, CMT2.tr, (255, 0, 0), 4)
+    #     cv2.line(im_draw, CMT2.tr, CMT2.br, (255, 0, 0), 4)
+    #     cv2.line(im_draw, CMT2.br, CMT2.bl, (255, 0, 0), 4)
+    #     cv2.line(im_draw, CMT2.bl, CMT2.tl, (255, 0, 0), 4)
 
     # util.draw_keypoints(CMT1.tracked_keypoints, im_draw, (255, 255, 255))  # white
     # # this is from simplescale
