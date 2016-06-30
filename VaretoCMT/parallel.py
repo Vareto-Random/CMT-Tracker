@@ -97,9 +97,9 @@ if args.inputpath is not None:
 #     tl = bbox[:2]
 #     br = bbox[2:4]
 
-tl1 = [405, 150]
-br1 = [455, 290]
-tl2 = [250, 97]
+tl1 = [405, 160]
+br1 = [450, 275]
+tl2 = [255, 100]
 br2 = [275, 155]
 
 print 'using', tl1, br1, 'as init bb'
@@ -119,16 +119,16 @@ while True:
     im_draw = np.copy(im)
 
     tic = time.time()
-    CMT1.process_frame(im_gray)
+    #CMT1.process_frame(im_gray)
     CMT2.process_frame(im_gray)
     toc = time.time()
 
     # Display results
-    if CMT1.has_result:
-        cv2.line(im_draw, CMT1.tl, CMT1.tr, (255, 0, 0), 4)
-        cv2.line(im_draw, CMT1.tr, CMT1.br, (255, 0, 0), 4)
-        cv2.line(im_draw, CMT1.br, CMT1.bl, (255, 0, 0), 4)
-        cv2.line(im_draw, CMT1.bl, CMT1.tl, (255, 0, 0), 4)
+    # if CMT1.has_result:
+    #     cv2.line(im_draw, CMT1.tl, CMT1.tr, (255, 0, 0), 4)
+    #     cv2.line(im_draw, CMT1.tr, CMT1.br, (255, 0, 0), 4)
+    #     cv2.line(im_draw, CMT1.br, CMT1.bl, (255, 0, 0), 4)
+    #     cv2.line(im_draw, CMT1.bl, CMT1.tl, (255, 0, 0), 4)
     if CMT2.has_result:
         cv2.line(im_draw, CMT2.tl, CMT2.tr, (255, 0, 0), 4)
         cv2.line(im_draw, CMT2.tr, CMT2.br, (255, 0, 0), 4)
