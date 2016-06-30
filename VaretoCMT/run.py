@@ -1,5 +1,9 @@
 #!/usr/bin/env python
 
+# --bbox=180,180,100,100  ../video_carlos/frame.mp4
+# --bbox=140,170,200,500  ../video_carlos/frame.mp4
+# --bbox=405,150,50,140  ../video_tennis/frame.mp4
+
 import argparse
 import cv2
 from numpy import empty, nan
@@ -36,6 +40,8 @@ args = parser.parse_args()
 
 CMT.estimate_scale = args.estimate_scale
 CMT.estimate_rotation = args.estimate_rotation
+
+print CMT.estimate_scale
 
 if args.pause:
     pause_time = 0
