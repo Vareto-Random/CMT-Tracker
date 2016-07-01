@@ -1,17 +1,16 @@
 import argparse
 import cv2
 from multiprocessing import Pool
-#from numpy import empty, nan
 import os
 import sys
 import time
 
-import CMTvareto
+import VARtracker
 import numpy as np
 import util
 
-CMT1 = CMTvareto.CMT()
-CMT2 = CMTvareto.CMT()
+CMT1 = VARtracker.CMT()
+CMT2 = VARtracker.CMT()
 
 OUTPUT_FILE = "out_boxes.txt"
 open(OUTPUT_FILE, 'w').close()
@@ -36,8 +35,6 @@ CMT1.estimate_scale = args.estimate_scale
 CMT2.estimate_scale = args.estimate_scale
 CMT1.estimate_rotation = args.estimate_rotation
 CMT2.estimate_rotation = args.estimate_rotation
-
-print CMT1.estimate_scale
 
 if args.pause:
     pause_time = 0
@@ -105,8 +102,8 @@ br2 = [275, 155]
 
 print 'using', tl1, br1, 'as init bb'
 
-CMTvareto.initialise(CMT1, im_gray0, tl1, br1)
-CMTvareto.initialise(CMT2, im_gray0, tl2, br2)
+VARtracker.initialise(CMT1, im_gray0, tl1, br1)
+VARtracker.initialise(CMT2, im_gray0, tl2, br2)
 
 frame = 1
 while True:
@@ -121,12 +118,15 @@ while True:
     im_draw = np.copy(im)
 
     tic = time.time()
-    #res1 = pool.apply_async(CMTvareto.process_frame, args = (CMT1, im_gray))
-    #res2 = pool.apply_async(CMTvareto.process_frame, args = (CMT2, im_gray))
-    res1 = CMTvareto.process_frame(CMT1, im_gray)
-    #res2 = CMTvareto.process_frame(CMT2, im_gray)
+    #res1 = VARtracker.process_frame(CMT1, im_gray)
+    #res2 = VARtracker.process_frame(CMT2, im_gray)
+
+    res1 = pool.apply_async(VARtracker.process_frame, (CMT2, im_gray))
+    res2 = pool.apply_async(VARtracker.process_frame, (CMT2, im_gray))
     pool.close()
     pool.join()
+    res1 = res1.get()
+    res2 = res2.get()
     toc = time.time()
 
     # Display results
@@ -135,16 +135,11 @@ while True:
         cv2.line(im_draw, res1.tr, res1.br, (255, 0, 0), 4)
         cv2.line(im_draw, res1.br, res1.bl, (255, 0, 0), 4)
         cv2.line(im_draw, res1.bl, res1.tl, (255, 0, 0), 4)
-    # if res2.has_result:
-    #     cv2.line(im_draw, CMT2.tl, CMT2.tr, (255, 0, 0), 4)
-    #     cv2.line(im_draw, CMT2.tr, CMT2.br, (255, 0, 0), 4)
-    #     cv2.line(im_draw, CMT2.br, CMT2.bl, (255, 0, 0), 4)
-    #     cv2.line(im_draw, CMT2.bl, CMT2.tl, (255, 0, 0), 4)
-
-    # util.draw_keypoints(CMT1.tracked_keypoints, im_draw, (255, 255, 255))  # white
-    # # this is from simplescale
-    # util.draw_keypoints(CMT1.votes[:, :2], im_draw)  # blue
-    # util.draw_keypoints(CMT1.outliers[:, :2], im_draw, (0, 0, 255))
+    if res2.has_result:
+        cv2.line(im_draw, CMT2.tl, CMT2.tr, (255, 0, 0), 4)
+        cv2.line(im_draw, CMT2.tr, CMT2.br, (255, 0, 0), 4)
+        cv2.line(im_draw, CMT2.br, CMT2.bl, (255, 0, 0), 4)
+        cv2.line(im_draw, CMT2.bl, CMT2.tl, (255, 0, 0), 4)
 
     if not args.quiet:
         cv2.imshow('main', im_draw)
