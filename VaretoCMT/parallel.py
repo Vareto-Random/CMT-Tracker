@@ -6,12 +6,12 @@ import os
 import sys
 import time
 
-import CMT
+import CMTvareto
 import numpy as np
 import util
 
-CMT1 = CMT.CMT()
-CMT2 = CMT.CMT()
+CMT1 = CMTvareto.CMT()
+CMT2 = CMTvareto.CMT()
 
 OUTPUT_FILE = "out_boxes.txt"
 open(OUTPUT_FILE, 'w').close()
@@ -105,8 +105,8 @@ br2 = [275, 155]
 
 print 'using', tl1, br1, 'as init bb'
 
-CMT1.initialise(im_gray0, tl1, br1)
-CMT2.initialise(im_gray0, tl2, br2)
+CMTvareto.initialise(CMT1, im_gray0, tl1, br1)
+CMTvareto.initialise(CMT2, im_gray0, tl2, br2)
 
 frame = 1
 while True:
@@ -121,18 +121,20 @@ while True:
     im_draw = np.copy(im)
 
     tic = time.time()
-    print pool.apply_async(CMT1.process_frame, im_gray)
-    #print pool.apply_async(CMT2.process_frame, im_gray)
-    #CMT1.process_frame(im_gray)
-    #CMT2.process_frame(im_gray)
+    #res1 = pool.apply_async(CMTvareto.process_frame, args = (CMT1, im_gray))
+    #res2 = pool.apply_async(CMTvareto.process_frame, args = (CMT2, im_gray))
+    res1 = CMTvareto.process_frame(CMT1, im_gray)
+    #res2 = CMTvareto.process_frame(CMT2, im_gray)
+    pool.close()
+    pool.join()
     toc = time.time()
 
     # Display results
-    # if res1.has_result:
-    #     cv2.line(im_draw, res1.tl, res1.tr, (255, 0, 0), 4)
-    #     cv2.line(im_draw, res1.tr, res1.br, (255, 0, 0), 4)
-    #     cv2.line(im_draw, res1.br, res1.bl, (255, 0, 0), 4)
-    #     cv2.line(im_draw, res1.bl, res1.tl, (255, 0, 0), 4)
+    if res1.has_result:
+        cv2.line(im_draw, res1.tl, res1.tr, (255, 0, 0), 4)
+        cv2.line(im_draw, res1.tr, res1.br, (255, 0, 0), 4)
+        cv2.line(im_draw, res1.br, res1.bl, (255, 0, 0), 4)
+        cv2.line(im_draw, res1.bl, res1.tl, (255, 0, 0), 4)
     # if res2.has_result:
     #     cv2.line(im_draw, CMT2.tl, CMT2.tr, (255, 0, 0), 4)
     #     cv2.line(im_draw, CMT2.tr, CMT2.br, (255, 0, 0), 4)
