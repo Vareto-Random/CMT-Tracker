@@ -1,8 +1,8 @@
 # Custom
-*.jpg
-*.jpeg
-*.mp4
-
+#*.jpg
+#*.jpeg
+#*.mp4
+videoOUT/
 
 ## C++
 # Compiled Object files
