@@ -1,13 +1,17 @@
 import argparse
-import cv2
+import cv2 as cv
+import numpy as np
 from multiprocessing import Pool
+from threading import Thread
 import os
 import sys
 import time
 
 import VARtracker
-import numpy as np
+
 import util
+
+import Queue
 
 CMT1 = VARtracker.CMT()
 CMT2 = VARtracker.CMT()
@@ -48,15 +52,15 @@ if args.output is not None:
         raise Exception(args.output + ' exists, but is not a directory')
 
 # Clean up
-cv2.destroyAllWindows()
+cv.destroyAllWindows()
 
 if args.inputpath is not None:
     # If a path to a file was given, assume it is a single video file
     if os.path.isfile(args.inputpath):
-        cap = cv2.VideoCapture(args.inputpath)
+        cap = cv.VideoCapture(args.inputpath)
         # Skip first frames if required
         if args.skip is not None:
-            cap.set(cv2.cv.CV_CAP_PROP_POS_FRAMES, args.skip)
+            cap.set(cv.CV_CAP_PROP_POS_FRAMES, args.skip)
 
     # Otherwise assume it is a format string for reading images
     else:
@@ -72,7 +76,7 @@ if args.inputpath is not None:
 
     # Read first frame
     status, im0 = cap.read()
-    im_gray0 = cv2.cvtColor(im0, cv2.COLOR_BGR2GRAY)
+    im_gray0 = cv.cvtColor(im0, cv.COLOR_BGR2GRAY)
     im_draw = np.copy(im0)
 
 # if args.bbox is not None:
@@ -103,7 +107,7 @@ br2 = [275, 155]
 print 'using', tl1, br1, 'as init bb'
 
 VARtracker.initialise(CMT1, im_gray0, tl1, br1)
-VARtracker.initialise(CMT2, im_gray0, tl2, br2)
+# VARtracker.initialise(CMT2, im_gray0, tl2, br2)
 
 frame = 1
 while True:
@@ -114,36 +118,37 @@ while True:
     status, im = cap.read()
     if not status:
         break
-    im_gray = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY)
+    im_gray = cv.cvtColor(im, cv.COLOR_BGR2GRAY)
     im_draw = np.copy(im)
 
     tic = time.time()
-    #res1 = VARtracker.process_frame(CMT1, im_gray)
-    #res2 = VARtracker.process_frame(CMT2, im_gray)
+    res1 = VARtracker.process_frame(CMT1, im_gray)
+    # res2 = VARtracker.process_frame(CMT2, im_gray)
 
-    res1 = pool.apply_async(VARtracker.process_frame, (CMT2, im_gray))
-    res2 = pool.apply_async(VARtracker.process_frame, (CMT2, im_gray))
-    pool.close()
-    pool.join()
-    res1 = res1.get()
-    res2 = res2.get()
+    # res1 = pool.apply_async(VARtracker.process_frame, (CMT2, im_gray))
+    # res2 = pool.apply_async(VARtracker.process_frame, (CMT2, im_gray))
+    # pool.close()
+    # pool.join()
+    # res1 = res1.get()
+    # res2 = res2.get()
     toc = time.time()
 
     # Display results
     if res1.has_result:
-        cv2.line(im_draw, res1.tl, res1.tr, (255, 0, 0), 4)
-        cv2.line(im_draw, res1.tr, res1.br, (255, 0, 0), 4)
-        cv2.line(im_draw, res1.br, res1.bl, (255, 0, 0), 4)
-        cv2.line(im_draw, res1.bl, res1.tl, (255, 0, 0), 4)
-    if res2.has_result:
-        cv2.line(im_draw, CMT2.tl, CMT2.tr, (255, 0, 0), 4)
-        cv2.line(im_draw, CMT2.tr, CMT2.br, (255, 0, 0), 4)
-        cv2.line(im_draw, CMT2.br, CMT2.bl, (255, 0, 0), 4)
-        cv2.line(im_draw, CMT2.bl, CMT2.tl, (255, 0, 0), 4)
+        cv.line(im_draw, res1.tl, res1.tr, (255, 0, 0), 4)
+        cv.line(im_draw, res1.tr, res1.br, (255, 0, 0), 4)
+        cv.line(im_draw, res1.br, res1.bl, (255, 0, 0), 4)
+        cv.line(im_draw, res1.bl, res1.tl, (255, 0, 0), 4)
+    # if res2.has_result:
+    #     cv.line(im_draw, CMT2.tl, CMT2.tr, (255, 0, 0), 4)
+    #     cv.line(im_draw, CMT2.tr, CMT2.br, (255, 0, 0), 4)
+    #     cv.line(im_draw, CMT2.br, CMT2.bl, (255, 0, 0), 4)
+    #     cv.line(im_draw, CMT2.bl, CMT2.tl, (255, 0, 0), 4)
 
     if not args.quiet:
-        cv2.imshow('main', im_draw)
-        cv2.waitKey(pause_time)
+        cv.imshow('main', im_draw)
+        cv.waitKey(pause_time)
+
 
     # Remember image
     im_prev = im_gray
