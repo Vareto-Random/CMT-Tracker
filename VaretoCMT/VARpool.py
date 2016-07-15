@@ -1,7 +1,9 @@
 import cv2 as cv
+import itertools as it
 import numpy as np
 import time
 
+from multiprocessing.dummy import Pool as ThreadPool
 from Queue import Queue
 from threading import Thread
 
@@ -14,9 +16,21 @@ def main():
     VARmethod('../video_tennis/', 200, [[405, 160],[255, 100]], [[450, 275],[275, 155]])
 
 
-def addToQueue(queue, CMT, image):
-    res = VARtracker.process_frame(CMT, image)
-    queue.put(res)
+response_list = []
+def addToQueue(result):
+    response_list.append(result)
+
+
+def calculateParallel(cmts, image):
+    pool = ThreadPool(6)
+    queue = Queue()
+    temp = zip(cmts, image)
+    # results = pool.map(VARtracker.process_frame, zip(cmts, image))
+    for cmt in cmts:
+        result = pool.apply_async(VARtracker.process_frame, args=(cmt, image), callback=addToQueue)
+    pool.close()
+    pool.join()
+    return queue
 
 
 def VARmethod(folder_path, final_frame, top_left, bottom_right):
@@ -36,6 +50,8 @@ def VARmethod(folder_path, final_frame, top_left, bottom_right):
         for index in range(len(list_cmt)):
             VARtracker.initialise(list_cmt[index], gray0, top_left[index], bottom_right[index])
 
+
+
         frame_id = 1
         while frame_id < len(list_frame):
             frame_path = folder_path + '/' + list_name[frame_id]
@@ -43,25 +59,24 @@ def VARmethod(folder_path, final_frame, top_left, bottom_right):
             gray = cv.cvtColor(image, cv.COLOR_BGR2GRAY)
             # copy = np.copy(image)
 
-            queue = Queue()
-            thread_list = []
-            for cmt in list_cmt:
-                line = Thread(target=addToQueue, args=(queue, cmt, gray))
-                line.setDaemon(True)
-                thread_list.append(line)
 
-            [line.start() for line in thread_list]
-            [line.join() for line in thread_list]
-            # queue.join()
+            # thread_list = []
+            # for cmt in list_cmt:
+            #     line = Thread(target=addToQueue, args=(queue, cmt, gray))
+            #     line.setDaemon(True)
+            #     thread_list.append(line)
+            #
+            # [line.start() for line in thread_list]
+            # [line.join() for line in thread_list]
 
-            while queue.qsize() > 0:
-                # print('queue: ', queue.qsize())
-                res = queue.get()
-                if res.has_result:
-                    cv.line(image, res.tl, res.tr, (255, 0, 0), 4)
-                    cv.line(image, res.tr, res.br, (255, 0, 0), 4)
-                    cv.line(image, res.br, res.bl, (255, 0, 0), 4)
-                    cv.line(image, res.bl, res.tl, (255, 0, 0), 4)
+            queue = calculateParallel(list_cmt, gray)
+
+            for response in response_list:
+                if response.has_result:
+                    cv.line(image, response.tl, response.tr, (255, 0, 0), 4)
+                    cv.line(image, response.tr, response.br, (255, 0, 0), 4)
+                    cv.line(image, response.br, response.bl, (255, 0, 0), 4)
+                    cv.line(image, response.bl, response.tl, (255, 0, 0), 4)
 
             cv.imshow('main', image)
             cv.waitKey(1)
