@@ -25,17 +25,6 @@ class CMT:
 
 
 def initialise(CMTobject, im_gray0, tl, br):
-    CMTobject.DETECTOR = 'BRISK'
-    CMTobject.DESCRIPTOR = 'BRISK'
-    CMTobject.DESC_LENGTH = 512
-    CMTobject.MATCHER = 'BruteForce-Hamming'
-    CMTobject.THR_OUTLIER = 20
-    CMTobject.THR_CONF = 0.75
-    CMTobject.THR_RATIO = 0.8
-
-    CMTobject.estimate_scale = True
-    CMTobject.estimate_rotation = True
-
     # Initialise detector, descriptor, matcher
     if cv2.__version__ == '3.0.0':
         CMTobject.detector = cv2.BRISK_create()

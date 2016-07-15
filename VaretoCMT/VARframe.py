@@ -9,9 +9,14 @@ import VARtracker
 
 
 def main():
-    # VARmethod('../video_carlos/', 200, [[140, 170]], [[300, 500]])
-    # VARmethod('../video_tennis/', 200, [[405, 160]], [[450, 275]])
-    VARmethod('../video_tennis/', 200, [[405, 160],[255, 100]], [[450, 275],[275, 155]])
+    print('VARframe(../video_carlos/, 1000, [[140, 170]], [[300, 500]])')
+    VARmethod('../video_carlos/', 1000, [[140, 170]], [[300, 500]])
+    print('VARframe(../video_tennis/, 1000, [[405, 160]], [[450, 275]])')
+    VARmethod('../video_tennis/', 1000, [[405, 160]], [[450, 275]])
+    print('VARframe(../video_tennis/, 1000, [[405, 160],[255, 100]], [[450, 275],[275, 155]])')
+    VARmethod('../video_tennis/', 1000, [[405, 160],[255, 100]], [[450, 275],[275, 155]])
+    print('VARframe(../video_tennis/, 1000, [[405, 160],[255, 100],[340,80]], [[450, 275],[275, 155],[355,115]])')
+    VARmethod('../video_tennis/', 1000, [[405, 160],[255, 100],[340,80]], [[450, 275],[275, 155],[355,115]])
 
 
 def addToQueue(queue, CMT, image):
@@ -65,7 +70,7 @@ def VARmethod(folder_path, final_frame, top_left, bottom_right):
 
             cv.imshow('main', image)
             cv.waitKey(1)
-            print(frame_id)
+            # print(frame_id)
             frame_id += 1
 
     toc = time.time()

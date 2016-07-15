@@ -1,36 +1,29 @@
 import cv2 as cv
-import itertools as it
+
 import numpy as np
 import time
 
+from functools import partial
 from multiprocessing.dummy import Pool as ThreadPool
 from Queue import Queue
 from threading import Thread
 
 import VARtracker
 
-
 def main():
-    # VARmethod('../video_carlos/', 200, [[140, 170]], [[300, 500]])
-    # VARmethod('../video_tennis/', 200, [[405, 160]], [[450, 275]])
-    VARmethod('../video_tennis/', 200, [[405, 160],[255, 100]], [[450, 275],[275, 155]])
+    print('VARpool(../video_carlos/, 1000, [[140, 170]], [[300, 500]])')
+    VARmethod('../video_carlos/', 1000, [[140, 170]], [[300, 500]])
+    print('VARpool(../video_tennis/, 1000, [[405, 160]], [[450, 275]])')
+    VARmethod('../video_tennis/', 1000, [[405, 160]], [[450, 275]])
+    print('VARpool(../video_tennis/, 1000, [[405, 160],[255, 100]], [[450, 275],[275, 155]])')
+    VARmethod('../video_tennis/', 1000, [[405, 160],[255, 100]], [[450, 275],[275, 155]])
+    print('VARpool(../video_tennis/, 1000, [[405, 160],[255, 100],[340,80]], [[450, 275],[275, 155],[355,115]])')
+    VARmethod('../video_tennis/', 1000, [[405, 160],[255, 100],[340,80]], [[450, 275],[275, 155],[355,115]])
 
 
-response_list = []
-def addToQueue(result):
-    response_list.append(result)
-
-
-def calculateParallel(cmts, image):
-    pool = ThreadPool(6)
-    queue = Queue()
-    temp = zip(cmts, image)
-    # results = pool.map(VARtracker.process_frame, zip(cmts, image))
-    for cmt in cmts:
-        result = pool.apply_async(VARtracker.process_frame, args=(cmt, image), callback=addToQueue)
-    pool.close()
-    pool.join()
-    return queue
+def calculate_parallel(image, cmts):
+    results = VARtracker.process_frame(cmts, image)
+    return results
 
 
 def VARmethod(folder_path, final_frame, top_left, bottom_right):
@@ -50,26 +43,18 @@ def VARmethod(folder_path, final_frame, top_left, bottom_right):
         for index in range(len(list_cmt)):
             VARtracker.initialise(list_cmt[index], gray0, top_left[index], bottom_right[index])
 
-
-
         frame_id = 1
         while frame_id < len(list_frame):
             frame_path = folder_path + '/' + list_name[frame_id]
             image = cv.imread(frame_path)
             gray = cv.cvtColor(image, cv.COLOR_BGR2GRAY)
-            # copy = np.copy(image)
 
-
-            # thread_list = []
-            # for cmt in list_cmt:
-            #     line = Thread(target=addToQueue, args=(queue, cmt, gray))
-            #     line.setDaemon(True)
-            #     thread_list.append(line)
-            #
-            # [line.start() for line in thread_list]
-            # [line.join() for line in thread_list]
-
-            queue = calculateParallel(list_cmt, gray)
+            pool = ThreadPool(3)
+            method = partial(calculate_parallel, gray)
+            response_list = pool.map(method, list_cmt)
+            # pool.map_async(method, list_cmt)
+            pool.close()
+            pool.join()
 
             for response in response_list:
                 if response.has_result:
@@ -80,7 +65,7 @@ def VARmethod(folder_path, final_frame, top_left, bottom_right):
 
             cv.imshow('main', image)
             cv.waitKey(1)
-            print(frame_id)
+            # print(frame_id)
             frame_id += 1
 
     toc = time.time()
