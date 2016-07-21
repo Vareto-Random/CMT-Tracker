@@ -12,16 +12,16 @@ import util
 
 class CMT(object):
     def __init__(self):
-        DETECTOR = 'BRISK'
-        DESCRIPTOR = 'BRISK'
-        DESC_LENGTH = 512
-        MATCHER = 'BruteForce-Hamming'
-        THR_OUTLIER = 20
-        THR_CONF = 0.75
-        THR_RATIO = 0.8
+        self.DETECTOR = 'BRISK'
+        self.DESCRIPTOR = 'BRISK'
+        self.DESC_LENGTH = 512
+        self.MATCHER = 'BruteForce-Hamming'
+        self.THR_OUTLIER = 20
+        self.THR_CONF = 0.75
+        self.THR_RATIO = 0.8
 
-        estimate_scale = True
-        estimate_rotation = True
+        self.estimate_scale = True
+        self.estimate_rotation = True
 
         # Initialise detector, descriptor, matcher
         if cv2.__version__ == '3.0.0':

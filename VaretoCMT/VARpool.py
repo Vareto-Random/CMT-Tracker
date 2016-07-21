@@ -11,9 +11,6 @@ from threading import Thread
 import VARtracker
 
 
-# queue = mp.Queue()
-
-
 def main():
     # print('VARpool(../video_carlos/, 1000, [[140, 170]], [[300, 500]])')
     # VARmethod('../video_carlos/', 1000, [[140, 170]], [[300, 500]])
@@ -28,13 +25,13 @@ def main():
 def worker(image_0, image_now, top_left, bot_right):
     cmt = VARtracker.CMT()
     cmt.initialise(image_0, top_left, bot_right)
+    print 'Entrou'
     result = cmt.process_frame(image_now)
     return result
 
-queue = []
+queue = mp.Queue()
 def on_return(result):
-    # queue.put(result)
-    queue.append(result)
+    queue.put(result)
     print 'Saiu'
 
 
@@ -54,7 +51,7 @@ def VARmethod(folder_path, final_frame, top_left, bot_right):
         image_0 = cv.imread(frame_path)
         gray_0 = cv.cvtColor(image_0, cv.COLOR_BGR2GRAY)
 
-        pool = mp.Pool(1)
+        pool = mp.Pool(5)
 
         frame_id = 1
         while frame_id < len(list_frame):
@@ -72,7 +69,7 @@ def VARmethod(folder_path, final_frame, top_left, bot_right):
         pool.close()
         pool.join()
 
-        print len(queue)
+        # print queue.qsize()
 
         print 'Finished with the script'
 
