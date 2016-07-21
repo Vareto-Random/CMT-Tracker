@@ -107,7 +107,7 @@ br2 = [275, 155]
 print 'using', tl1, br1, 'as init bb'
 
 VARtracker.initialise(CMT1, im_gray0, tl1, br1)
-# VARtracker.initialise(CMT2, im_gray0, tl2, br2)
+VARtracker.initialise(CMT2, im_gray0, tl2, br2)
 
 frame = 1
 while True:
@@ -123,7 +123,7 @@ while True:
 
     tic = time.time()
     res1 = VARtracker.process_frame(CMT1, im_gray)
-    # res2 = VARtracker.process_frame(CMT2, im_gray)
+    res2 = VARtracker.process_frame(CMT2, im_gray)
 
     # res1 = pool.apply_async(VARtracker.process_frame, (CMT2, im_gray))
     # res2 = pool.apply_async(VARtracker.process_frame, (CMT2, im_gray))
@@ -139,15 +139,15 @@ while True:
         cv.line(im_draw, res1.tr, res1.br, (255, 0, 0), 4)
         cv.line(im_draw, res1.br, res1.bl, (255, 0, 0), 4)
         cv.line(im_draw, res1.bl, res1.tl, (255, 0, 0), 4)
-    # if res2.has_result:
-    #     cv.line(im_draw, CMT2.tl, CMT2.tr, (255, 0, 0), 4)
-    #     cv.line(im_draw, CMT2.tr, CMT2.br, (255, 0, 0), 4)
-    #     cv.line(im_draw, CMT2.br, CMT2.bl, (255, 0, 0), 4)
-    #     cv.line(im_draw, CMT2.bl, CMT2.tl, (255, 0, 0), 4)
+    if res2.has_result:
+        cv.line(im_draw, CMT2.tl, CMT2.tr, (255, 0, 0), 4)
+        cv.line(im_draw, CMT2.tr, CMT2.br, (255, 0, 0), 4)
+        cv.line(im_draw, CMT2.br, CMT2.bl, (255, 0, 0), 4)
+        cv.line(im_draw, CMT2.bl, CMT2.tl, (255, 0, 0), 4)
 
     if not args.quiet:
         cv.imshow('main', im_draw)
-        cv.waitKey(pause_time)
+        cv.waitKey(0)
 
 
     # Remember image

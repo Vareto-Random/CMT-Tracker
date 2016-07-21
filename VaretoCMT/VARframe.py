@@ -3,6 +3,7 @@ import numpy as np
 import time
 
 from Queue import Queue
+from multiprocessing import Process
 from threading import Thread
 
 import VARtracker
@@ -11,12 +12,12 @@ import VARtracker
 def main():
     print('VARframe(../video_carlos/, 1000, [[140, 170]], [[300, 500]])')
     VARmethod('../video_carlos/', 1000, [[140, 170]], [[300, 500]])
-    print('VARframe(../video_tennis/, 1000, [[405, 160]], [[450, 275]])')
-    VARmethod('../video_tennis/', 1000, [[405, 160]], [[450, 275]])
-    print('VARframe(../video_tennis/, 1000, [[405, 160],[255, 100]], [[450, 275],[275, 155]])')
-    VARmethod('../video_tennis/', 1000, [[405, 160],[255, 100]], [[450, 275],[275, 155]])
-    print('VARframe(../video_tennis/, 1000, [[405, 160],[255, 100],[340,80]], [[450, 275],[275, 155],[355,115]])')
-    VARmethod('../video_tennis/', 1000, [[405, 160],[255, 100],[340,80]], [[450, 275],[275, 155],[355,115]])
+    # print('VARframe(../video_tennis/, 1000, [[405, 160]], [[450, 275]])')
+    # VARmethod('../video_tennis/', 1000, [[405, 160]], [[450, 275]])
+    # print('VARframe(../video_tennis/, 1000, [[405, 160],[255, 100]], [[450, 275],[275, 155]])')
+    # VARmethod('../video_tennis/', 1000, [[405, 160],[255, 100]], [[450, 275],[275, 155]])
+    # print('VARframe(../video_tennis/, 1000, [[405, 160],[255, 100],[340,80]], [[450, 275],[275, 155],[355,115]])')
+    # VARmethod('../video_tennis/', 1000, [[405, 160],[255, 100],[340,80]], [[450, 275],[275, 155],[355,115]])
 
 
 def addToQueue(queue, CMT, image):
