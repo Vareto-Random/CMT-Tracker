@@ -24,12 +24,18 @@ def main():
     # print('VARpool(../video_tennis/, 1000, [[405, 160],[255, 100],[340,80]], [[450, 275],[275, 155],[355,115]])')
     # VARmethod('../video_tennis/', 1000, [[405, 160],[255, 100],[340,80]], [[450, 275],[275, 155],[355,115]])
 
-queue = Queue.Queue()
-def worker(CMTobject, image):
-    result = VARtracker.process_frame(CMTobject, image)
-    print 'Entrou'
-    queue.put(result)
+
+def worker(image_0, image_now, top_left, bot_right):
+    cmt = VARtracker.CMT()
+    cmt.initialise(image_0, top_left, bot_right)
+    result = cmt.process_frame(image_now)
     return result
+
+queue = []
+def on_return(result):
+    # queue.put(result)
+    queue.append(result)
+    print 'Saiu'
 
 
 def func(x,y):
@@ -37,80 +43,36 @@ def func(x,y):
     return x
 
 
-def VARmethod(folder_path, final_frame, top_left, bottom_right):
+def VARmethod(folder_path, final_frame, top_left, bot_right):
     tic = time.time()
-    # queue = mp.Queue()
 
-    def callback(result):
-        # print '{} running callback with arg'.format(mp.current_process().name,)
-        queue.put(result)
-
-    if len(top_left) == len(bottom_right):
-        list_cmt = [VARtracker.CMT() for _ in range(len(top_left))]
+    if len(top_left) == len(bot_right):
         list_frame = [index for index in range(1, final_frame + 1)]
         list_name = [str(index) + '.jpg' for index in list_frame]
 
         frame_path = folder_path + '/' + list_name[0]
-        image0 = cv.imread(frame_path)
-        gray0 = cv.cvtColor(image0, cv.COLOR_BGR2GRAY)
+        image_0 = cv.imread(frame_path)
+        gray_0 = cv.cvtColor(image_0, cv.COLOR_BGR2GRAY)
 
-        for index in range(len(list_cmt)):
-            VARtracker.initialise(list_cmt[index], gray0, top_left[index], bottom_right[index])
-
-        ## USING POOL
-        pool = mp.Pool()
+        pool = mp.Pool(1)
 
         frame_id = 1
         while frame_id < len(list_frame):
+
             frame_path = folder_path + '/' + list_name[frame_id]
-            image = cv.imread(frame_path)
-            gray = cv.cvtColor(image, cv.COLOR_BGR2GRAY)
+            image_now = cv.imread(frame_path)
+            gray_now = cv.cvtColor(image_now, cv.COLOR_BGR2GRAY)
 
-            counter = 1
-            for cmt in list_cmt:
-                ## USING POOL
-                pool.apply_async(func, args=(frame_id,counter), callback=callback)
-                # pool.apply_async(worker, args=(cmt, gray), callback=callback)
-                counter += 1
-
-                ## USING SERIAL
-                # result = worker(cmt, gray)
-                # if result.has_result:
-                #     cv.line(image, result.tl, result.tr, (255, 0, 0), 4)
-                #     cv.line(image, result.tr, result.br, (255, 0, 0), 4)
-                #     cv.line(image, result.br, result.bl, (255, 0, 0), 4)
-                #     cv.line(image, result.bl, result.tl, (255, 0, 0), 4)
-                #
-                #     cv.imshow('main', image)
-                #     cv.waitKey(1)
-
-            ## USING PROCESS
-            #     p = mp.Process(target=worker, args=(cmt, gray))
-            #     p.start()
-            #
-            # for _ in list_cmt:
-            #     p.join()
-            #
-            # if queue.qsize() > 0:
-            #     result = queue.get()
-            #     if result.has_result:
-            #         cv.line(image, result.tl, result.tr, (255, 0, 0), 4)
-            #         cv.line(image, result.tr, result.br, (255, 0, 0), 4)
-            #         cv.line(image, result.br, result.bl, (255, 0, 0), 4)
-            #         cv.line(image, result.bl, result.tl, (255, 0, 0), 4)
-            #
-            #         cv.imshow('main', image)
-            #         cv.waitKey(1)
-
+            for index in range(len(top_left)):
+                pool.apply_async(worker, args=(gray_0, gray_now, top_left[index], bot_right[index]), callback=on_return)
 
             print frame_id
             frame_id += 1
 
-        ## USING POOL
         pool.close()
         pool.join()
 
-        print queue.qsize()
+        print len(queue)
 
         print 'Finished with the script'
 
@@ -119,5 +81,5 @@ def VARmethod(folder_path, final_frame, top_left, bottom_right):
 
 
 if __name__ == "__main__":
-    # mp.log_to_stderr(logging.DEBUG)
+    mp.log_to_stderr(logging.DEBUG)
     main()
