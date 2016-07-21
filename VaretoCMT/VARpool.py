@@ -1,6 +1,8 @@
 import cv2 as cv
+import logging
 import multiprocessing as mp
 import numpy as np
+import Queue
 import time
 
 from functools import partial
@@ -9,45 +11,39 @@ from threading import Thread
 import VARtracker
 
 
-queue = mp.Queue()
+# queue = mp.Queue()
 
 
 def main():
-    print('VARpool(../video_carlos/, 1000, [[140, 170]], [[300, 500]])')
-    VARmethod('../video_carlos/', 1000, [[140, 170]], [[300, 500]])
-    # print('VARpool(../video_tennis/, 1000, [[405, 160]], [[450, 275]])')
-    # VARmethod('../video_tennis/', 1000, [[405, 160]], [[450, 275]])
+    # print('VARpool(../video_carlos/, 1000, [[140, 170]], [[300, 500]])')
+    # VARmethod('../video_carlos/', 1000, [[140, 170]], [[300, 500]])
+    print('VARpool(../video_tennis/, 1000, [[405, 160]], [[450, 275]])')
+    VARmethod('../video_tennis/', 100, [[405, 160]], [[450, 275]])
     # print('VARpool(../video_tennis/, 1000, [[405, 160],[255, 100]], [[450, 275],[275, 155]])')
     # VARmethod('../video_tennis/', 1000, [[405, 160],[255, 100]], [[450, 275],[275, 155]])
     # print('VARpool(../video_tennis/, 1000, [[405, 160],[255, 100],[340,80]], [[450, 275],[275, 155],[355,115]])')
-    # VARmethod('../video_tennis/', 100, [[405, 160],[255, 100],[340,80]], [[450, 275],[275, 155],[355,115]])
+    # VARmethod('../video_tennis/', 1000, [[405, 160],[255, 100],[340,80]], [[450, 275],[275, 155],[355,115]])
 
-
-def my_function(cmts, image):
-    # print '{} running func with arg {}'.format(mp.current_process().name)
-    # result = VARtracker.process_frame(cmts, image)
+queue = Queue.Queue()
+def worker(CMTobject, image):
+    result = VARtracker.process_frame(CMTobject, image)
     print 'Entrou'
-    return 1
+    queue.put(result)
+    return result
 
 
-def func(x,y,c):
+def func(x,y):
     print '{} running func with arg {} and {}'.format(mp.current_process().name, x, y)
     return x
 
 
-# def func(x, cmts, image):
-#     print '{} running func with arg {}'.format(mp.current_process().name, x)
-#     # VARtracker.process_frame(cmts, image)
-#     return x
-
-
 def VARmethod(folder_path, final_frame, top_left, bottom_right):
     tic = time.time()
+    # queue = mp.Queue()
 
-    queue = mp.Queue()
-    def callback(x):
+    def callback(result):
         # print '{} running callback with arg'.format(mp.current_process().name,)
-        queue.put(x)
+        queue.put(result)
 
     if len(top_left) == len(bottom_right):
         list_cmt = [VARtracker.CMT() for _ in range(len(top_left))]
@@ -61,7 +57,8 @@ def VARmethod(folder_path, final_frame, top_left, bottom_right):
         for index in range(len(list_cmt)):
             VARtracker.initialise(list_cmt[index], gray0, top_left[index], bottom_right[index])
 
-        # pool = mp.Pool()
+        ## USING POOL
+        pool = mp.Pool()
 
         frame_id = 1
         while frame_id < len(list_frame):
@@ -71,14 +68,45 @@ def VARmethod(folder_path, final_frame, top_left, bottom_right):
 
             counter = 1
             for cmt in list_cmt:
-                # pool.apply_async(func, args=(frame_id,counter,cmt), callback=callback)
-                # pool.apply_async(my_function, args=(cmt, gray), callback=callback)
+                ## USING POOL
+                pool.apply_async(func, args=(frame_id,counter), callback=callback)
+                # pool.apply_async(worker, args=(cmt, gray), callback=callback)
                 counter += 1
-                pool = mp.Process
+
+                ## USING SERIAL
+                # result = worker(cmt, gray)
+                # if result.has_result:
+                #     cv.line(image, result.tl, result.tr, (255, 0, 0), 4)
+                #     cv.line(image, result.tr, result.br, (255, 0, 0), 4)
+                #     cv.line(image, result.br, result.bl, (255, 0, 0), 4)
+                #     cv.line(image, result.bl, result.tl, (255, 0, 0), 4)
+                #
+                #     cv.imshow('main', image)
+                #     cv.waitKey(1)
+
+            ## USING PROCESS
+            #     p = mp.Process(target=worker, args=(cmt, gray))
+            #     p.start()
+            #
+            # for _ in list_cmt:
+            #     p.join()
+            #
+            # if queue.qsize() > 0:
+            #     result = queue.get()
+            #     if result.has_result:
+            #         cv.line(image, result.tl, result.tr, (255, 0, 0), 4)
+            #         cv.line(image, result.tr, result.br, (255, 0, 0), 4)
+            #         cv.line(image, result.br, result.bl, (255, 0, 0), 4)
+            #         cv.line(image, result.bl, result.tl, (255, 0, 0), 4)
+            #
+            #         cv.imshow('main', image)
+            #         cv.waitKey(1)
 
 
+            print frame_id
             frame_id += 1
 
+        ## USING POOL
         pool.close()
         pool.join()
 
@@ -91,4 +119,5 @@ def VARmethod(folder_path, final_frame, top_left, bottom_right):
 
 
 if __name__ == "__main__":
+    # mp.log_to_stderr(logging.DEBUG)
     main()
