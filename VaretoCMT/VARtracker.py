@@ -23,6 +23,7 @@ class CMT(object):
         self.estimate_scale = True
         self.estimate_rotation = True
 
+    def initialise(self, im_gray0, tl, br):
         # Initialise detector, descriptor, matcher
         if cv2.__version__ == '3.0.0':
             self.detector = cv2.BRISK_create()
@@ -32,8 +33,6 @@ class CMT(object):
             self.descriptor = cv2.DescriptorExtractor_create(self.DESCRIPTOR)
         self.matcher = cv2.DescriptorMatcher_create(self.MATCHER)
 
-    def initialise(self, image, tl, br):
-        im_gray0 = np.copy(image)
         # Get initial keypoints in whole image
         keypoints_cv = self.detector.detect(im_gray0)
 
