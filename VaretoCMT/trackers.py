@@ -27,9 +27,16 @@ def worker(folder_path, initial_frame, final_frame, top_left, bot_right, id):
 
             cmt.process_frame(gray_now)
             if cmt.has_result:
-                list_of_bbs.append((id, name, zip(cmt.tl, cmt.br)))
+                list_of_bbs.append((id, name, cmt.tl, cmt.br))
         print 'Processo {} terminou'.format(id)
 
         return list_of_bbs
     else:
         return None
+
+
+# HOW TO RUN
+# Start celery: celery worker -A trackers &
+# Python: from trackers import worker
+# jobC = worker.delay('../video_carlos/', 1, 100, [140, 170], [300, 500], 1)
+# Stop celery: ps auxww | grep 'celery worker' | awk '{print $2}'| xargs kill

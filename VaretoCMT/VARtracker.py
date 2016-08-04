@@ -262,7 +262,10 @@ class CMT(object):
                 secondBestInd = matches[1].trainIdx
 
                 # Compute distance ratio according to Lowe
-                ratio = (1 - combined[0]) / (1 - combined[1])
+                if (1 - combined[0]) == 0:
+                    ratio = 0.0
+                else:
+                    ratio = (1 - combined[0]) / (1 - combined[1])
 
                 # Extract class of best match
                 keypoint_class = classes[bestInd]
