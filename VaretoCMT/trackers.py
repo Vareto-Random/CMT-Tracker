@@ -1,13 +1,20 @@
 from celery import Celery
+from multiprocessing import Queue
 
 import cv2 as cv
+import time
 import VARtracker
 
 app = Celery('trackers', backend='amqp', broker='amqp://')
-app.conf.CELERY_REDIRECT_STDOUTS=False
+app.conf.CELERY_REDIRECT_STDOUTS = False
+
+queue_of_bbs = Queue()
 
 @app.task
 def worker(folder_path, initial_frame, final_frame, top_left, bot_right, id):
+    print queue_of_bbs.qsize()
+
+    tic = time.time()
     if len(top_left) == len(bot_right):
         list_frame = [index for index in range(initial_frame, final_frame + 1)]
         list_name = [str(index) + '.jpg' for index in list_frame]
@@ -28,15 +35,13 @@ def worker(folder_path, initial_frame, final_frame, top_left, bot_right, id):
             cmt.process_frame(gray_now)
             if cmt.has_result:
                 list_of_bbs.append((id, name, cmt.tl, cmt.br))
-        print 'Processo {} terminou'.format(id)
+                queue_of_bbs.put((id, name, cmt.tl, cmt.br))
+        toc = time.time()
+        print(initial_frame, ' ', final_frame)
+        print(toc - tic)
+        print 'Processo {} terminou em {} segundos: {} frs/sec'.format(id, toc - tic, (final_frame - initial_frame + 1)/(toc - tic))
 
         return list_of_bbs
     else:
         return None
 
-
-# HOW TO RUN
-# Start celery: celery worker -A trackers &
-# Python: from trackers import worker
-# jobC = worker.delay('../video_carlos/', 1, 100, [140, 170], [300, 500], 1)
-# Stop celery: ps auxww | grep 'celery worker' | awk '{print $2}'| xargs kill
