@@ -94,4 +94,3 @@ Rect getRect(const Mat im, const string win_name)
 
     return Rect(tl,br);
 }
-

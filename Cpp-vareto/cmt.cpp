@@ -1,4 +1,4 @@
-#include "CMT.h"
+#include "cmt.h"
 
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
@@ -7,8 +7,6 @@ namespace cmt {
 
 void CMT::initialize(const Mat im_gray, const Rect rect)
 {
-    FILE_LOG(logDEBUG) << "CMT::initialize() call";
-
     //Remember initial size
     size_initial = rect.size();
 
@@ -78,8 +76,6 @@ void CMT::initialize(const Mat im_gray, const Rect rect)
         points_fg.push_back(keypoints_fg[i].pt);
     }
 
-    FILE_LOG(logDEBUG) << points_fg.size() << " foreground points.";
-
     for (size_t i = 0; i < keypoints_bg.size(); i++)
     {
         points_bg.push_back(keypoints_bg[i].pt);
@@ -104,20 +100,13 @@ void CMT::initialize(const Mat im_gray, const Rect rect)
         points_active.push_back(keypoints_fg[i].pt);
         classes_active = classes_fg;
     }
-
-    FILE_LOG(logDEBUG) << "CMT::initialize() return";
 }
 
 void CMT::processFrame(Mat im_gray) {
-
-    FILE_LOG(logDEBUG) << "CMT::processFrame() call";
-
     //Track keypoints
     vector<Point2f> points_tracked;
     vector<unsigned char> status;
     tracker.track(im_prev, im_gray, points_active, points_tracked, status);
-
-    FILE_LOG(logDEBUG) << points_tracked.size() << " tracked points.";
 
     //keep only successful classes
     vector<int> classes_tracked;
@@ -134,8 +123,6 @@ void CMT::processFrame(Mat im_gray) {
     vector<KeyPoint> keypoints;
     detector->detect(im_gray, keypoints);
 
-    FILE_LOG(logDEBUG) << keypoints.size() << " keypoints found.";
-
     Mat descriptors;
     descriptor->compute(im_gray, keypoints, descriptors);
 
@@ -144,39 +131,28 @@ void CMT::processFrame(Mat im_gray) {
     vector<int> classes_matched_global;
     matcher.matchGlobal(keypoints, descriptors, points_matched_global, classes_matched_global);
 
-    FILE_LOG(logDEBUG) << points_matched_global.size() << " points matched globally.";
-
     //Fuse tracked and globally matched points
     vector<Point2f> points_fused;
     vector<int> classes_fused;
     fusion.preferFirst(points_tracked, classes_tracked, points_matched_global, classes_matched_global,
-            points_fused, classes_fused);
-
-    FILE_LOG(logDEBUG) << points_fused.size() << " points fused.";
+                       points_fused, classes_fused);
 
     //Estimate scale and rotation from the fused points
     float scale;
     float rotation;
     consensus.estimateScaleRotation(points_fused, classes_fused, scale, rotation);
 
-    FILE_LOG(logDEBUG) << "scale " << scale << ", " << "rotation " << rotation;
-
     //Find inliers and the center of their votes
     Point2f center;
     vector<Point2f> points_inlier;
     vector<int> classes_inlier;
     consensus.findConsensus(points_fused, classes_fused, scale, rotation,
-            center, points_inlier, classes_inlier);
-
-    FILE_LOG(logDEBUG) << points_inlier.size() << " inlier points.";
-    FILE_LOG(logDEBUG) << "center " << center;
+                            center, points_inlier, classes_inlier);
 
     //Match keypoints locally
     vector<Point2f> points_matched_local;
     vector<int> classes_matched_local;
     matcher.matchLocal(keypoints, descriptors, center, scale, rotation, points_matched_local, classes_matched_local);
-
-    FILE_LOG(logDEBUG) << points_matched_local.size() << " points matched locally.";
 
     //Clear active points
     points_active.clear();
@@ -184,18 +160,14 @@ void CMT::processFrame(Mat im_gray) {
 
     //Fuse locally matched points and inliers
     fusion.preferFirst(points_matched_local, classes_matched_local, points_inlier, classes_inlier, points_active, classes_active);
-//    points_active = points_fused;
-//    classes_active = classes_fused;
-
-    FILE_LOG(logDEBUG) << points_active.size() << " final fused points.";
+    //    points_active = points_fused;
+    //    classes_active = classes_fused;
 
     //TODO: Use theta to suppress result
     bb_rot = RotatedRect(center,  size_initial * scale, rotation/CV_PI * 180);
 
     //Remember current image
     im_prev = im_gray;
-
-    FILE_LOG(logDEBUG) << "CMT::processFrame() return";
 }
 
-} /* namespace CMT */
+}

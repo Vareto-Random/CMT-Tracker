@@ -1,12 +1,11 @@
 #ifndef CMT_H
-
 #define CMT_H
 
 #include "common.h"
-#include "Consensus.h"
-#include "Fusion.h"
-#include "Matcher.h"
-#include "Tracker.h"
+#include "consensus.h"
+#include "fusion.h"
+#include "matcher.h"
+#include "tracker.h"
 
 #include <opencv2/features2d/features2d.hpp>
 
@@ -50,6 +49,6 @@ private:
     Mat im_prev;
 };
 
-} /* namespace CMT */
+}
 
-#endif /* end of include guard: CMT_H */
+#endif // CMT_H

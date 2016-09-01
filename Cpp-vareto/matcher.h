@@ -1,5 +1,4 @@
 #ifndef MATCHER_H
-
 #define MATCHER_H
 
 #include "common.h"
@@ -17,12 +16,12 @@ class Matcher
 public:
     Matcher() : thr_dist(0.25), thr_ratio(0.8), thr_cutoff(20) {};
     void initialize(const vector<Point2f> & pts_fg_norm, const Mat desc_fg, const vector<int> & classes_fg,
-            const Mat desc_bg, const Point2f center);
+                    const Mat desc_bg, const Point2f center);
     void matchGlobal(const vector<KeyPoint> & keypoints, const Mat descriptors,
-            vector<Point2f> & points_matched, vector<int> & classes_matched);
+                     vector<Point2f> & points_matched, vector<int> & classes_matched);
     void matchLocal(const vector<KeyPoint> & keypoints, const Mat descriptors,
-            const Point2f center, const float scale, const float rotation,
-            vector<Point2f> & points_matched, vector<int> & classes_matched);
+                    const Point2f center, const float scale, const float rotation,
+                    vector<Point2f> & points_matched, vector<int> & classes_matched);
 
 private:
     vector<Point2f> pts_fg_norm;
@@ -36,6 +35,6 @@ private:
     float thr_cutoff;
 };
 
-} /* namespace CMT */
+}
 
-#endif /* end of include guard: MATCHER_H */
+#endif // MATCHER_H

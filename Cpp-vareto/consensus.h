@@ -1,5 +1,4 @@
 #ifndef CONSENSUS_H
-
 #define CONSENSUS_H
 
 #include "common.h"
@@ -28,6 +27,6 @@ private:
     Mat angles_pairwise;
 };
 
-} /* namespace cmt */
+}
 
-#endif /* end of include guard: CONSENSUS_H */
+#endif // CONSENSUS_H
