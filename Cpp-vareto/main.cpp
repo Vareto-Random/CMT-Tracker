@@ -1,6 +1,9 @@
 #include <QCoreApplication>
 
+#include <iostream>
+
 #include "cmt.h"
+#include "cmthread.h"
 #include "gui.h"
 
 using namespace cmt;
@@ -28,7 +31,7 @@ int display(Mat im, CMT & cmt)
     return cv::waitKey(1);
 }
 
-int main(int argc, char *argv[])
+int default_main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
 
@@ -91,21 +94,107 @@ int main(int argc, char *argv[])
         Mat im;
         cap >> im;
 
-         //Exit at end of video stream
-         if (im.empty())
-             break;
+        //Exit at end of video stream
+        if (im.empty())
+            break;
 
-         Mat im_gray;
-         if (im.channels() > 1) {
-             cvtColor(im, im_gray, CV_BGR2GRAY);
-         } else {
-             im_gray = im;
-         }
+        Mat im_gray;
+        if (im.channels() > 1) {
+            cvtColor(im, im_gray, CV_BGR2GRAY);
+        } else {
+            im_gray = im;
+        }
 
-         //Let CMT process the frame
-         cmt.processFrame(im_gray);
-         display(im, cmt);
+        //Let CMT process the frame
+        cmt.processFrame(im_gray);
+        display(im, cmt);
     }
+
+    return a.exec();
+}
+
+int main(int argc, char *argv[])
+{
+    QCoreApplication a(argc, argv);
+
+    bool show_preview = true;
+    int frame = 0;
+    string input_path = "video.mp4";
+
+    Mat initialView, grayInitialView;
+
+    VideoCapture capture1(input_path), capture2(input_path);
+
+    //Initialization bounding box
+    Rect rect;
+
+    //Create window
+    cv::namedWindow(WIN_NAME);
+
+    while (show_preview)
+    {
+        frame++;
+        Mat preview;
+        capture1 >> preview;
+
+        screenLog(preview, "Press a key to start selecting an object.");
+        imshow(WIN_NAME, preview);
+
+        char k = cv::waitKey(10);
+        if (k != -1) {
+            show_preview = false;
+        }
+    }
+
+    //Get initial image
+    capture1 >> initialView;
+
+    //get bounding box from user
+    rect = getRect(initialView, WIN_NAME);
+
+    //Convert initialView to grayscale
+    if (initialView.channels() > 1) {
+        cvtColor(initialView, grayInitialView, CV_BGR2GRAY);
+    } else {
+        grayInitialView = initialView;
+    }
+
+    CMThread tracker1(capture1, rect, "tracker01.txt", frame);
+    tracker1.start();
+
+    show_preview = true;
+
+    while (show_preview)
+    {
+        frame++;
+        Mat preview;
+        capture2 >> preview;
+
+        screenLog(preview, "Press a key to start selecting an object.");
+        imshow(WIN_NAME, preview);
+
+        char k = cv::waitKey(10);
+        if (k != -1) {
+            show_preview = false;
+        }
+    }
+
+    //Get initial image
+    capture2 >> initialView;
+
+    //get bounding box from user
+    rect = getRect(initialView, WIN_NAME);
+
+    //Convert initialView to grayscale
+    if (initialView.channels() > 1) {
+        cvtColor(initialView, grayInitialView, CV_BGR2GRAY);
+    } else {
+        grayInitialView = initialView;
+    }
+
+    CMThread tracker2(capture2, rect, "tracker02.txt", frame);
+    tracker2.start();
+
 
     return a.exec();
 }

@@ -20,7 +20,8 @@ SOURCES += main.cpp \
     matcher.cpp \
     tracker.cpp \
     fastcluster.cpp \
-    gui.cpp
+    gui.cpp \
+    cmthread.cpp
 
 HEADERS += \
     cmt.h \
@@ -30,4 +31,5 @@ HEADERS += \
     matcher.h \
     tracker.h \
     fastcluster.h \
-    gui.h
+    gui.h \
+    cmthread.h
