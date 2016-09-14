@@ -31,7 +31,7 @@ int display(Mat im, CMT & cmt)
     return cv::waitKey(1);
 }
 
-int default_main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
 
@@ -108,12 +108,16 @@ int default_main(int argc, char *argv[])
         //Let CMT process the frame
         cmt.processFrame(im_gray);
         display(im, cmt);
+
+        QString message;
+        QTextStream(&message) << frame;
+        qDebug( message.toStdString());
     }
 
     return a.exec();
 }
 
-int main(int argc, char *argv[])
+int dmain(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
 
